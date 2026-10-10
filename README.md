@@ -4,12 +4,12 @@
 [![Community Extension](https://img.shields.io/badge/community--extensions-ossie-blue)](https://github.com/duckdb/community-extensions/blob/main/extensions/ossie/description.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-The [Apache Ossie](https://github.com/apache/ossie) (incubating) reference implementation for
-DuckDB. It reads Ossie semantic model files — YAML or JSON — and answers semantic queries against
-the tables in DuckDB, from a single binary, with no infrastructure. This extension also exposes the
+The [Apache Ossie](https://github.com/apache/ossie) (incubating) extension for DuckDB. It reads
+Ossie semantic model files — YAML or JSON — and answers semantic queries against the tables in
+DuckDB, from a single binary, with no infrastructure. This extension also exposes the
 semantic layer via MCP.
 
-**This extension works with DuckDB v1.5.5.**
+**This extension works with DuckDB v1.5.6.**
 
 Ossie is a vendor-neutral file format for semantic models: `datasets` bound to physical tables,
 `fields`, declared `relationships`, and `metrics` written as aggregate expressions. It describes
@@ -27,17 +27,19 @@ implementation that answers a question rather than translating one.
 Claims about a file format should be checkable, so:
 
 - Models are validated against the format's own [`core-spec/ossie-schema.json`](https://github.com/apache/ossie/blob/main/core-spec/ossie-schema.json)
-- The suite includes five models published by *other* Ossie implementers — Databricks, GoodData,
-  NVIDIA, Omni and OrionBelt — vendored verbatim from `apache/ossie`. Four load and answer queries.
-  The fifth carries only `DATABRICKS` expressions, which this extension does not execute
+- The suite includes six models from `apache/ossie`, vendored verbatim: five published by *other*
+  Ossie implementers — Databricks, GoodData, NVIDIA, Omni and OrionBelt — and the spec's own TPC-DS
+  example. Five load and answer queries. The Databricks model carries only `DATABRICKS`
+  expressions, which this extension does not execute
 - Generated SQL is diffed against hand-written TPC-DS equivalents with symmetric `EXCEPT` over
   `dsdgen(sf = 0.01)` data, so correctness is measured against the numbers rather than against our
   own output. This currently covers `total_sales` and `books_sales`. The remaining metrics are
   exercised by the golden-SQL, grain or vocabulary tests, none of which can catch a wrong *number*
 
-What is not yet supported is listed in [docs/limitations.md](docs/limitations.md): `ANSI_SQL`
-expressions only, one semantic model per file, table-backed sources only, and metrics that span
-more than one grain are refused rather than answered wrongly.
+Models use the flat document shape of Ossie 0.2.0.dev0, one model per file, with expressions in
+`OSSIE_SQL_2026` (the spec's own expression language) or `ANSI_SQL`. What is not yet supported is
+listed in [docs/limitations.md](docs/limitations.md): table-backed sources only, and metrics that
+span more than one grain or use a window function are refused rather than answered wrongly.
 
 ```sql
 CALL ossie_load('model.json', rebind => MAP{'tpcds.public': 'tpcds.main'});
@@ -118,7 +120,7 @@ refused with *Tool not found*. `scripts/mcp_check.py` asserts this on every push
 > an arbitrary SQL argument and reaches the same data. Disable all five, or point the server only at
 > a database you are willing to expose in full.
 
-## Building
+## Building & Contributing
 
 No vcpkg and no build-time dependency fetching. JSON parsing uses the yyjson DuckDB already vendors;
 YAML support is a single vendored header ([third_party/fkyaml](third_party/fkyaml), MIT).
@@ -128,7 +130,7 @@ git submodule update --init --recursive
 make
 ```
 
-Submodules are pinned by recorded commit (DuckDB `v1.5.5`). DuckDB's parser and planner internals
+Submodules are pinned by recorded commit (DuckDB `v1.5.6`). DuckDB's parser and planner internals
 are not a stable API, so the pin is deliberate and upgrades are expected to need work. The first
 build compiles DuckDB from source and takes a while; later builds are incremental.
 
@@ -138,6 +140,13 @@ make test
 
 For the architecture and how to work on the compiler, see
 [docs/architecture.md](docs/architecture.md).
+
+Issues and pull requests are welcome — most of all for semantic models this extension misinterpets,
+since models written by other implementers are the only ones that can catch a disagreement about
+the format. Refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+
+If the extension is useful to you, a ⭐ on [the repository](https://github.com/iqea-ai/duckdb-ossie)
+helps others find it.
 
 ## License
 
