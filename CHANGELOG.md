@@ -11,6 +11,8 @@ pins). The DuckDB version each release targets is noted separately.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-10
+
 Targets DuckDB **v1.5.6**. Version 0.2.0: catches up with two changes to the Ossie spec, one of them
 breaking, that 0.1.1 predates.
 
