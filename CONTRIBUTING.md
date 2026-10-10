@@ -40,7 +40,8 @@ be document in [docs/limitations.md](docs/limitations.md).
 emit; quoting and precedence come from DuckDB's printer.
 
 **Where possible, fail at load time instead of query time.** Malformed expressions, query-valued `source:`, dangling
-relationship endpoints and non-`ANSI_SQL`-only expressions are all `ossie_load` errors.
+relationship endpoints and expressions with neither an `OSSIE_SQL_2026` nor an `ANSI_SQL` variant are
+all `ossie_load` errors.
 
 **Use useful error text.** An agent reads a refusal and retries, so messages name the
 offending object and tests assert on the message, not merely that something threw.
