@@ -138,6 +138,7 @@ shared_ptr<Model> OssieState::GetModel() {
 
 void RegisterLoadFunction(ExtensionLoader &loader) {
 	TableFunction ossie_load("ossie_load", {LogicalType::VARCHAR}, LoadFunction, LoadBind, LoadInitGlobal);
+	NameParameters(ossie_load.GetSignature(), {"path"});
 	// Keyword-only parameters without a default are required, so each carries the value it has when omitted.
 	auto rebind_type = LogicalType::MAP(LogicalType::VARCHAR, LogicalType::VARCHAR);
 	ossie_load.GetSignature()
