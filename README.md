@@ -17,10 +17,9 @@ data in place and never transforms it. What the format deliberately leaves open 
 those definitions go into — the joins, the `GROUP BY`, and the grain — because those depend on the
 question being asked, and the file does not know the question.
 
-**Every other shipped Ossie implementation is a converter**, translating definitions into some
-vendor's semantic layer so that vendor's engine can run them. This one executes the query itself:
-it plans the joins, derives the grain, and emits SQL that DuckDB runs. It is the first Ossie
-implementation that answers a question rather than translating one.
+**The converters in apache/ossie translate** definitions into some vendor's semantic layer so that
+vendor's engine can run them. This one executes the query itself: it plans the joins, derives the
+grain, and emits SQL that DuckDB runs.
 
 ### Conformance
 
