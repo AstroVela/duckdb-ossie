@@ -19,18 +19,22 @@ jobs:
     name: Build extension binaries
     uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v2.0-cyanoptera
     with:
-      duckdb_version: 53d30031051018f6c5e0a07bc35abe3d7fe1c7ce
+      duckdb_version: d54cbbe3df17e8e5ce68312f483b4155836112aa
       ci_tools_version: v2.0-cyanoptera
       extension_name: ossie
+      # v2.0-cyanoptera defaults to reduced_ci_mode: auto, which builds only linux_amd64, windows_amd64 and
+      # wasm_eh on pull requests. artifact-load downloads osx_arm64, so on a PR it would fail with
+      # "Artifact not found". Build every platform on every run, as the 1.5 line did.
+      reduced_ci_mode: disabled
 
   # Drives examples/server.sql over MCP with the extension THIS run built, loaded from its file into a
   # stock CLI. It used to install ossie from the community registry, which made every merge wait on
   # DuckDB publishing the very version under review: the registry never has the code a PR introduces.
   # The registry path is still tested, after publishing, by RegistryCheck.yml.
   #
-  # PRE-RELEASE (v2.0-cyanoptera branch): the job needs a released 2.0.0 CLI to load the artifact into, and
-  # duckdb_mcp from the registry, neither of which exists for DuckDB 2.0 until 2.0.0 ships, so it is off until
-  # then. Remove the `if` when the branch merges to main after the release.
+  # OFF (2026-10-21): duckdb_mcp has no DuckDB 2.0 build in the registry yet (v2.0.0 returns 404; its remap
+  # is duckdb/community-extensions#3111). This job installs it from there, so it cannot pass. Remove the
+  # `if` and add the job back to ci-gate once duckdb_mcp serves v2.0.0. This stays true after the 2.0.0 tag.
   mcp-round-trip:
     name: MCP round trip
     needs: duckdb-stable-build
@@ -45,7 +49,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ossie-53d30031051018f6c5e0a07bc35abe3d7fe1c7ce-extension-linux_amd64
+          name: ossie-d54cbbe3df17e8e5ce68312f483b4155836112aa-extension-linux_amd64
           path: downloaded
 
       # A stock CLI and network rather than this repo's build tree: static linking there is exactly
@@ -101,7 +105,7 @@ jobs:
       # Download it somewhere neutral and put it where the check script reads $EXT.
       - uses: actions/download-artifact@v4
         with:
-          name: ossie-53d30031051018f6c5e0a07bc35abe3d7fe1c7ce-extension-${{ matrix.arch }}
+          name: ossie-d54cbbe3df17e8e5ce68312f483b4155836112aa-extension-${{ matrix.arch }}
           path: downloaded
 
       - name: Place the artifact where the check script reads it
@@ -166,7 +170,7 @@ jobs:
     name: Code Quality Check
     uses: duckdb/extension-ci-tools/.github/workflows/_extension_code_quality.yml@v2.0-cyanoptera
     with:
-      duckdb_version: 53d30031051018f6c5e0a07bc35abe3d7fe1c7ce
+      duckdb_version: d54cbbe3df17e8e5ce68312f483b4155836112aa
       ci_tools_version: v2.0-cyanoptera
       extension_name: ossie
       format_checks: 'format;tidy'
