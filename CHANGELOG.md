@@ -11,6 +11,8 @@ pins). The DuckDB version each release targets is noted separately.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-21
+
 Targets DuckDB **v2.0.0**. DuckDB v1.5.6 keeps the 0.2.0 build.
 
 ### Changed
@@ -21,6 +23,11 @@ Targets DuckDB **v2.0.0**. DuckDB v1.5.6 keeps the 0.2.0 build.
 - `ossie_compile` is marked fallible, so its refusals still reach the caller as messages. DuckDB 2.0
   turns a throw from an unmarked scalar function into an INTERNAL error.
 - Golden SQL gained parentheses around joins, from DuckDB 2.0's printer.
+
+### Fixed
+- `duckdb_functions()` lists every ossie parameter by name again. DuckDB 2.0 reads names from the
+  signature, so without this change each function showed `col0`, `col1`, ... to an agent.
+  `ossie_load` now lists all four parameters, where 1.5 showed only `path`.
 
 ### Known issues
 - The MCP surface (`examples/server.sql`) needs `duckdb_mcp`, which has no DuckDB 2.0 build in the
@@ -185,6 +192,8 @@ most likely to affect you:
 - **No row cap.** `ossie_query` takes metrics, dimensions, and filters and nothing else, so a
   high-cardinality dimension returns every row
 
-[Unreleased]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/iqea-ai/duckdb-ossie/releases/tag/v0.1.0
