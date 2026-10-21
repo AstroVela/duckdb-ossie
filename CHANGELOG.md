@@ -11,6 +11,29 @@ pins). The DuckDB version each release targets is noted separately.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-21
+
+Targets DuckDB **v2.0.0**. DuckDB v1.5.6 keeps the 0.2.0 build.
+
+### Changed
+- Built against DuckDB v2.0.0 and extension-ci-tools `v2.0-cyanoptera`. Every file that touches a
+  parse tree or registers a function changed for DuckDB 2.0's API.
+- `ossie_load`'s keyword parameters (`rebind`, `validate_sources`, `allow_filter_functions`) now
+  declare their defaults. DuckDB 2.0 makes a keyword parameter without a default required.
+- `ossie_compile` is marked fallible, so its refusals still reach the caller as messages. DuckDB 2.0
+  turns a throw from an unmarked scalar function into an INTERNAL error.
+- Golden SQL gained parentheses around joins, from DuckDB 2.0's printer.
+
+### Fixed
+- `duckdb_functions()` lists every ossie parameter by name again. DuckDB 2.0 reads names from the
+  signature, so without this change each function showed `col0`, `col1`, ... to an agent.
+  `ossie_load` now lists all four parameters, where 1.5 showed only `path`.
+
+### Known issues
+- The MCP surface (`examples/server.sql`) needs `duckdb_mcp`, which has no DuckDB 2.0 build in the
+  community registry yet. CI's `mcp-round-trip` job is off until it does.
+- The DuckDB interval defect listed under 0.2.0 is still present in v2.0.0.
+
 ## [0.2.0] - 2026-10-10
 
 Targets DuckDB **v1.5.6**. Version 0.2.0: catches up with two changes to the Ossie spec, one of them
@@ -169,6 +192,8 @@ most likely to affect you:
 - **No row cap.** `ossie_query` takes metrics, dimensions, and filters and nothing else, so a
   high-cardinality dimension returns every row
 
-[Unreleased]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/iqea-ai/duckdb-ossie/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/iqea-ai/duckdb-ossie/releases/tag/v0.1.0
