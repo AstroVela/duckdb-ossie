@@ -17,10 +17,9 @@ data in place and never transforms it. What the format deliberately leaves open 
 those definitions go into — the joins, the `GROUP BY`, and the grain — because those depend on the
 question being asked, and the file does not know the question.
 
-**Every other shipped Ossie implementation is a converter**, translating definitions into some
-vendor's semantic layer so that vendor's engine can run them. This one executes the query itself:
-it plans the joins, derives the grain, and emits SQL that DuckDB runs. It is the first Ossie
-implementation that answers a question rather than translating one.
+**The converters in apache/ossie translate** definitions into some vendor's semantic layer so that
+vendor's engine can run them. This one executes the query itself: it plans the joins, derives the
+grain, and emits SQL that DuckDB runs.
 
 ### Conformance
 
@@ -141,10 +140,9 @@ make test
 For the architecture and how to work on the compiler, see
 [docs/architecture.md](docs/architecture.md).
 
-Issues and pull requests are welcome — most of all a semantic model this extension reads wrongly,
+Issues and pull requests are welcome — most of all for semantic models this extension misinterpets,
 since models written by other implementers are the only ones that can catch a disagreement about
-the format. [CONTRIBUTING.md](CONTRIBUTING.md) covers the build, the invariants a change must hold
-to, when a differential test is required, and the exact `clang_format` version CI expects.
+the format. Refer to [CONTRIBUTING.md](CONTRIBUTING.md).
 
 If the extension is useful to you, a ⭐ on [the repository](https://github.com/iqea-ai/duckdb-ossie)
 helps others find it.
