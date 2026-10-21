@@ -8,7 +8,7 @@ misinterpreted by the extension are helpful.
 Both submodules must be checked out before any `make` target resolves.
 
 ```sh
-git submodule update --init --recursive   # duckdb v1.5.6, extension-ci-tools v1.5.6, fkYAML
+git submodule update --init --recursive   # duckdb v2.0.0, extension-ci-tools v2.0-cyanoptera, fkYAML
 make                                      # first build compiles DuckDB from source; slow, then incremental
 make test                                 # SQLLogicTests in test/sql/
 ```

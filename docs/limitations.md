@@ -123,7 +123,7 @@ message arriving later — not a wrong answer.
 folds `INTERVAL 30 DAY` and `INTERVAL 1 MONTH` to constants, compares them with a month normalised
 to 30 days, and merges the two expressions as duplicates, so a query that asks for both gets
 whichever comes first, twice. Adding a month to 2024-01-31 should give 2024-02-29, and does when
-asked alone. This is DuckDB 1.5.5 and 1.5.6 with no extension loaded, and it affects `ANSI_SQL`
+asked alone. This is DuckDB 1.5.5, 1.5.6 and 2.0.0 with no extension loaded, and it affects `ANSI_SQL`
 models (`d + INTERVAL 30 DAY` beside `d + INTERVAL 1 MONTH`) as much as `OSSIE_SQL_2026` ones
 (`DATEADD(day, 30, d)` beside `DATEADD(month, 1, d)`). Disabling the `common_subexpressions`
 optimizer gives the right answer. `test/sql/ossie_sql_2026.test` pins the current behaviour, so an

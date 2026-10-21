@@ -19,7 +19,7 @@ jobs:
     name: Build extension binaries
     uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v2.0-cyanoptera
     with:
-      duckdb_version: d54cbbe3df17e8e5ce68312f483b4155836112aa
+      duckdb_version: v2.0.0
       ci_tools_version: v2.0-cyanoptera
       extension_name: ossie
       # v2.0-cyanoptera defaults to reduced_ci_mode: auto, which builds only linux_amd64, windows_amd64 and
@@ -49,7 +49,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ossie-d54cbbe3df17e8e5ce68312f483b4155836112aa-extension-linux_amd64
+          name: ossie-v2.0.0-extension-linux_amd64
           path: downloaded
 
       # A stock CLI and network rather than this repo's build tree: static linking there is exactly
@@ -83,12 +83,8 @@ jobs:
   #
   # -unsigned is correct here and nowhere else: a freshly built artifact is genuinely unsigned,
   # unlike the signed builds the registry serves.
-  # PRE-RELEASE (v2.0-cyanoptera branch): needs a released 2.0.0 CLI to load the artifact into. The same
-  # check ran locally against a dev build of 2.0 (scripts/full_functionality_check.sh, 39/39). Remove the
-  # `if` when the branch merges to main after the release.
   artifact-load:
     name: Load built artifact (${{ matrix.arch }})
-    if: false
     needs: duckdb-stable-build
     strategy:
       fail-fast: false
@@ -105,7 +101,7 @@ jobs:
       # Download it somewhere neutral and put it where the check script reads $EXT.
       - uses: actions/download-artifact@v4
         with:
-          name: ossie-d54cbbe3df17e8e5ce68312f483b4155836112aa-extension-${{ matrix.arch }}
+          name: ossie-v2.0.0-extension-${{ matrix.arch }}
           path: downloaded
 
       - name: Place the artifact where the check script reads it
@@ -154,23 +150,24 @@ jobs:
   ci-gate:
     name: CI gate
     if: always()
-    # PRE-RELEASE: artifact-load and mcp-round-trip are off on this branch (see above), so the gate requires
-    # the two jobs that can pass before DuckDB 2.0.0 exists. Restore all four when the branch merges.
-    needs: [duckdb-stable-build, code-quality-check]
+    # mcp-round-trip is off until duckdb_mcp serves DuckDB 2.0 (see that job); restore it here with it.
+    needs: [duckdb-stable-build, artifact-load, code-quality-check]
     runs-on: ubuntu-latest
     steps:
       - name: Require every gating job to have succeeded
         run: |
           echo "build    = ${{ needs.duckdb-stable-build.result }}"
+          echo "artifact = ${{ needs.artifact-load.result }}"
           echo "quality  = ${{ needs.code-quality-check.result }}"
           [ "${{ needs.duckdb-stable-build.result }}" = success ] \
+          && [ "${{ needs.artifact-load.result }}" = success ] \
           && [ "${{ needs.code-quality-check.result }}" = success ]
 
   code-quality-check:
     name: Code Quality Check
     uses: duckdb/extension-ci-tools/.github/workflows/_extension_code_quality.yml@v2.0-cyanoptera
     with:
-      duckdb_version: d54cbbe3df17e8e5ce68312f483b4155836112aa
+      duckdb_version: v2.0.0
       ci_tools_version: v2.0-cyanoptera
       extension_name: ossie
       format_checks: 'format;tidy'
