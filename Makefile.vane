@@ -1,0 +1,46 @@
+# Independent Vane entry points; the upstream Makefile remains unchanged.
+VANE_EXTENSION_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+VANE_MANIFEST := $(VANE_EXTENSION_ROOT)/vane-extension.toml
+VANE_CI_TOOLS_DIR ?= $(VANE_EXTENSION_ROOT)/build/vane-ci-tools
+VANE_SOURCE_DIR ?= $(VANE_EXTENSION_ROOT)/build/vane-source
+VANE_NATIVE_BUILD_DIR ?= $(VANE_EXTENSION_ROOT)/build/vane-native
+VANE_WHEEL_BUILD_DIR ?= $(VANE_EXTENSION_ROOT)/build/vane-wheel
+VANE_WHEEL_DIST_DIR ?= $(VANE_EXTENSION_ROOT)/build/vane-dist
+VANE_VCPKG_INSTALLED_DIR ?= $(VANE_SOURCE_DIR)/vcpkg_installed
+VANE_PYTHON ?= python3
+VANE_BUILD_JOBS ?= 8
+VCPKG_TARGET_TRIPLET ?= x64-linux-release
+VANE_CI_TOOLS_REVISION := 9de078021e3cb0ee09d50568aca114e58f2c2014
+
+VANE_COMMAND = $(VANE_PYTHON) "$(VANE_CI_TOOLS_DIR)/scripts/vane_extension.py" \
+	--manifest "$(VANE_MANIFEST)" --extension-root "$(VANE_EXTENSION_ROOT)"
+
+.PHONY: vane_validate vane_prepare vane_native vane_wheel_dependencies vane_wheel
+
+vane_validate:
+	$(VANE_COMMAND) verify-ci-tools --ci-tools-source "$(VANE_CI_TOOLS_DIR)" \
+		--expected-sha "$(VANE_CI_TOOLS_REVISION)"
+	$(VANE_COMMAND) manifest
+
+vane_prepare: vane_validate
+	$(VANE_COMMAND) prepare --vane-source "$(VANE_SOURCE_DIR)"
+
+vane_native: vane_prepare
+	$(VANE_COMMAND) native --vane-source "$(VANE_SOURCE_DIR)" \
+		--build-dir "$(VANE_NATIVE_BUILD_DIR)" --jobs "$(VANE_BUILD_JOBS)"
+
+vane_wheel_dependencies: vane_prepare
+	$(VANE_COMMAND) verify-vcpkg
+	VCPKG_ROOT="$$(dirname "$$(dirname "$$(dirname "$(VCPKG_TOOLCHAIN_PATH)")")")" \
+	VCPKG_INSTALLED_DIR="$(VANE_VCPKG_INSTALLED_DIR)" \
+	VCPKG_TARGET_TRIPLET="$(VCPKG_TARGET_TRIPLET)" \
+	VCPKG_HOST_TRIPLET="$(VCPKG_TARGET_TRIPLET)" \
+	VCPKG_MAX_CONCURRENCY="$(VANE_BUILD_JOBS)" \
+		bash "$(VANE_SOURCE_DIR)/scripts/bootstrap_vcpkg.sh" "$(VANE_SOURCE_DIR)"
+
+vane_wheel: vane_wheel_dependencies
+	VCPKG_TARGET_TRIPLET="$(VCPKG_TARGET_TRIPLET)" \
+	$(VANE_PYTHON) "$(VANE_EXTENSION_ROOT)/scripts/build_vane_wheels.py" \
+		--vane-source "$(VANE_SOURCE_DIR)" --ci-tools-source "$(VANE_CI_TOOLS_DIR)" \
+		--build-dir "$(VANE_WHEEL_BUILD_DIR)" --dist-dir "$(VANE_WHEEL_DIST_DIR)" \
+		--vcpkg-installed "$(VANE_VCPKG_INSTALLED_DIR)" --jobs "$(VANE_BUILD_JOBS)"
