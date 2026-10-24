@@ -1,0 +1,17 @@
+schema_version = 2
+name = "ossie"
+extension_config = "extension_config_vane.cmake"
+build_extensions = ["json", "parquet"]
+native_test_selection = "test/sql/*"
+
+[vane]
+repository = "AstroVela/vane"
+revision = "8ef29bee9d5d1ada3d7d5efe77302a296ff6576a"
+
+[vcpkg]
+repository = "microsoft/vcpkg"
+revision = "44819aa2a6c10e56065e2b0330e7d6c89d1d2574"
+
+[ci_tools]
+repository = "AstroVela/vane-extension-ci-tools"
+revision = "9de078021e3cb0ee09d50568aca114e58f2c2014"

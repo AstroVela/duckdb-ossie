@@ -40,8 +40,8 @@ jobs:
       # for everyone installing from the registry.
       - name: Install the DuckDB CLI
         run: |
-          curl -fsSL https://install.duckdb.org | sh
-          echo "$HOME/.duckdb/cli/latest" >> "$GITHUB_PATH"
+          curl -fsSL https://install.duckdb.org | DUCKDB_VERSION=1.5.5 sh
+          echo "$HOME/.duckdb/cli/1.5.5" >> "$GITHUB_PATH"
 
       - name: Speak MCP to the published server
         run: python3 scripts/mcp_check.py
@@ -85,8 +85,8 @@ jobs:
 
       - name: Install the stock DuckDB CLI
         run: |
-          curl -fsSL https://install.duckdb.org | sh
-          echo "$HOME/.duckdb/cli/latest" >> "$GITHUB_PATH"
+          curl -fsSL https://install.duckdb.org | DUCKDB_VERSION=1.5.5 sh
+          echo "$HOME/.duckdb/cli/1.5.5" >> "$GITHUB_PATH"
 
       - name: Run the functionality check against the artifact
         run: |
