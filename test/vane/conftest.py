@@ -64,12 +64,10 @@ def semantic_data(connection, tmp_path: Path):
     for catalog in ("orders_catalog", "customers_catalog"):
         connection.execute(f"ATTACH ':memory:' AS {catalog}")
     connection.execute(
-        "CREATE VIEW orders_catalog.main.orders AS "
-        f"SELECT * FROM read_parquet({sql_string(orders / '*.parquet')})"
+        "CREATE VIEW orders_catalog.main.orders AS " f"SELECT * FROM read_parquet({sql_string(orders / '*.parquet')})"
     )
     connection.execute(
-        "CREATE VIEW customers_catalog.main.customers AS "
-        f"SELECT * FROM read_parquet({sql_string(customers)})"
+        "CREATE VIEW customers_catalog.main.customers AS " f"SELECT * FROM read_parquet({sql_string(customers)})"
     )
 
     def expression(sql):
@@ -85,10 +83,7 @@ def semantic_data(connection, tmp_path: Path):
                 "name": name,
                 "source": f"{name}_catalog.main.{name}",
                 "primary_key": ["id"],
-                "fields": [
-                    {"name": column, "expression": expression(column)}
-                    for column in columns
-                ],
+                "fields": [{"name": column, "expression": expression(column)} for column in columns],
             }
         )
     model = {
@@ -106,25 +101,17 @@ def semantic_data(connection, tmp_path: Path):
                         "to_columns": ["id"],
                     }
                 ],
-                "metrics": [
-                    {"name": "revenue", "expression": expression("sum(orders.amount)")}
-                ],
+                "metrics": [{"name": "revenue", "expression": expression("sum(orders.amount)")}],
             }
         ],
     }
     model_path = tmp_path / "retail.json"
     model_path.write_text(json.dumps(model), encoding="utf-8")
-    connection.execute(
-        f"PRAGMA vane_ossie_load({sql_string(model_path)}, validate_sources=true)"
-    )
+    connection.execute(f"PRAGMA vane_ossie_load({sql_string(model_path)}, validate_sources=true)")
     expected = sorted(
         (
             region,
-            sum(
-                value
-                for value, customer in zip(amounts, customer_ids)
-                if regions[customer] == region
-            ),
+            sum(value for value, customer in zip(amounts, customer_ids) if regions[customer] == region),
         )
         for region in set(regions)
     )

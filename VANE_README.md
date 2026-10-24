@@ -1,8 +1,9 @@
 # Ossie for Vane
 
 This branch adds Vane integration to Ossie `v0.1.1`, which targets DuckDB
-1.5.5. The original DuckDB source files, build inputs, submodule pins, tests,
-and distribution workflow are unchanged.
+1.5.5. The original DuckDB source files, build inputs, submodule pins and tests
+are unchanged. The native distribution workflow installs DuckDB 1.5.5 explicitly
+for its MCP and artifact-loading checks.
 
 ## Execution
 
@@ -67,9 +68,9 @@ repository permissions and does not publish packages or use production keys.
 
 ## Verification
 
-The new `Vane extension` workflow checks that all original `v0.1.1` files are
-unchanged, runs the original SQLLogicTests against Vane DuckDB, builds and verifies
-the installed wheel pair, and runs local and Ray tests in separate processes.
+The new `Vane extension` workflow checks that original `v0.1.1` files other than
+the CI workflow are unchanged, runs the original SQLLogicTests against Vane DuckDB,
+builds and verifies the installed wheel pair, and runs local and Ray tests in separate processes.
 The Ray test cluster has a head with no CPUs and two one-CPU worker nodes.
 
 After installing the generated wheels and `pytest`:

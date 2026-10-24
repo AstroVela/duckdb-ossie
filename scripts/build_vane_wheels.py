@@ -33,9 +33,7 @@ def run(command: list[str], *, env: dict[str, str] | None = None) -> None:
 def one_wheel(directory: Path, pattern: str) -> Path:
     wheels = list(directory.glob(pattern))
     if len(wheels) != 1:
-        raise RuntimeError(
-            f"expected one {pattern} in {directory}, found {len(wheels)}"
-        )
+        raise RuntimeError(f"expected one {pattern} in {directory}, found {len(wheels)}")
     return wheels[0]
 
 
@@ -46,17 +44,13 @@ def license_files(vane_source: Path, directory: Path) -> list[Path]:
     bundle = directory / "DuckDB-third-party.txt"
     sections = []
     for pattern in patterns:
-        if not pattern.startswith("external/duckdb/") or pattern.startswith(
-            "external/duckdb/extension/"
-        ):
+        if not pattern.startswith("external/duckdb/") or pattern.startswith("external/duckdb/extension/"):
             continue
         matches = sorted(vane_source.glob(pattern))
         if not matches:
             raise RuntimeError(f"missing DuckDB license files: {pattern}")
         for path in matches:
-            sections.append(
-                f"Source: {path.relative_to(vane_source)}\n\n{path.read_text()}\n"
-            )
+            sections.append(f"Source: {path.relative_to(vane_source)}\n\n{path.read_text()}\n")
     if not sections:
         raise RuntimeError("the Vane manifest declares no DuckDB license files")
     bundle.write_text("\n".join(sections), encoding="utf-8")
@@ -95,16 +89,10 @@ def main() -> None:
     if pins["ci_tools"]["repository"] != "AstroVela/vane-extension-ci-tools":
         raise RuntimeError("CI tools must come from AstroVela/vane-extension-ci-tools")
     ci_tools = args.ci_tools_source.resolve()
-    actual = subprocess.check_output(
-        ["git", "-C", str(ci_tools), "rev-parse", "HEAD"], text=True
-    ).strip()
-    status = subprocess.check_output(
-        ["git", "-C", str(ci_tools), "status", "--porcelain"], text=True
-    ).strip()
+    actual = subprocess.check_output(["git", "-C", str(ci_tools), "rev-parse", "HEAD"], text=True).strip()
+    status = subprocess.check_output(["git", "-C", str(ci_tools), "status", "--porcelain"], text=True).strip()
     if actual != pins["ci_tools"]["revision"] or status:
-        raise RuntimeError(
-            "CI tools must be clean and at the manifest's exact revision before import"
-        )
+        raise RuntimeError("CI tools must be clean and at the manifest's exact revision before import")
     tools_path = ci_tools / "scripts/vane_extension.py"
     spec = importlib.util.spec_from_file_location("_ossie_vane_tools", tools_path)
     tools = importlib.util.module_from_spec(spec)
@@ -121,9 +109,7 @@ def main() -> None:
     prefix = args.vcpkg_installed.resolve() / triplet
     for name in ("arrow", "arrowflight"):
         if not (prefix / "share" / name).is_dir():
-            raise RuntimeError(
-                f"Vane native dependencies are missing: {prefix}/share/{name}"
-            )
+            raise RuntimeError(f"Vane native dependencies are missing: {prefix}/share/{name}")
 
     build_dir, dist_dir = args.build_dir.resolve(), args.dist_dir.resolve()
     build_dir.mkdir(parents=True, exist_ok=True)
@@ -131,9 +117,7 @@ def main() -> None:
     if list(dist_dir.glob("*.whl")):
         raise RuntimeError("the output directory must not already contain wheels")
     prefix_config = build_dir / "vane-prefix.cmake"
-    prefix_config.write_text(
-        f'list(PREPEND CMAKE_PREFIX_PATH "{prefix}")\n', encoding="utf-8"
-    )
+    prefix_config.write_text(f'list(PREPEND CMAKE_PREFIX_PATH "{prefix}")\n', encoding="utf-8")
     cmake_args = [
         "-DBUILD_DISTRIBUTED_EXCHANGE=ON",
         "-DOSSIE_VANE_DISTRIBUTED=ON",
@@ -182,9 +166,7 @@ def main() -> None:
         VCPKG_MAX_CONCURRENCY=str(args.jobs),
     )
 
-    with tempfile.TemporaryDirectory(
-        prefix="vane-ossie-wheels-", dir=build_dir.parent
-    ) as temporary:
+    with tempfile.TemporaryDirectory(prefix="vane-ossie-wheels-", dir=build_dir.parent) as temporary:
         staging = Path(temporary)
         run(
             [
@@ -212,9 +194,7 @@ def main() -> None:
             env=env,
         )
         artifact = build_dir / "vane_extensions/ossie.duckdb_extension"
-        symbols = subprocess.check_output(
-            ["nm", "-D", "-C", "--undefined-only", str(artifact)], text=True
-        )
+        symbols = subprocess.check_output(["nm", "-D", "-C", "--undefined-only", str(artifact)], text=True)
         if any("duckdb::" in line for line in symbols.splitlines()):
             raise RuntimeError("the Ossie artifact has unresolved DuckDB C++ symbols")
         signed = staging / artifact.name
@@ -229,9 +209,7 @@ def main() -> None:
                 str(vane_source / "external/duckdb/test/mbedtls/private.pem"),
             ]
         )
-        platform_tag = next(
-            tag.platform for tag in sys_tags() if tag.platform.startswith("manylinux_")
-        )
+        platform_tag = next(tag.platform for tag in sys_tags() if tag.platform.startswith("manylinux_"))
         repaired = staging / "runtime"
         repaired.mkdir()
         run(

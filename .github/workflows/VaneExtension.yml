@@ -22,16 +22,21 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          submodules: recursive
           persist-credentials: false
-      - name: Require an additions-only change against Ossie v0.1.1
-        run: git diff --no-renames --exit-code --diff-filter=CDMRTUXB 5180c67299ca14fde9d46806c7d35f9f53c2f1a9 HEAD
+      - name: Preserve native files against Ossie v0.1.1
+        # The original CI workflow pins its CLI to the extension's DuckDB version.
+        run: >-
+          git diff --no-renames --exit-code --diff-filter=CDMRTUXB
+          5180c67299ca14fde9d46806c7d35f9f53c2f1a9 HEAD
+          -- . ':(exclude).github/workflows/MainDistributionPipeline.yml'
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.12"
       - name: Check Vane formatting and Python syntax
         run: |
           python -m pip install black==24.10.0 clang_format==11.0.1 cmake-format==0.6.13
-          python -m black --check scripts/build_vane_wheels.py test/vane
+          python -m black --check --skip-string-normalization --line-length 120 scripts/build_vane_wheels.py test/vane
           clang-format --dry-run --Werror vane/ossie_vane_extension.cpp
           cmake-format --check vane/CMakeLists.txt extension_config_vane.cmake extension_config_vane_loadable.cmake
           python -m compileall -q scripts/build_vane_wheels.py test/vane

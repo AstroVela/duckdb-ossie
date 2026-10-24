@@ -76,33 +76,20 @@ def test_semantic_join_runs_on_ray(connection, semantic_data, ray_runner, monkey
     assert all(worker["lookup_hits"] > 0 for worker in stats["workers"].values())
 
 
-def test_model_metadata_stays_on_coordinator(
-    connection, semantic_data, ray_runner, monkeypatch
-):
+def test_model_metadata_stays_on_coordinator(connection, semantic_data, ray_runner, monkeypatch):
     def unexpected_dispatch(_plan):
         raise AssertionError("model metadata must not be dispatched to a Ray worker")
 
     monkeypatch.setattr(ray_runner, "run_iter_tables", unexpected_dispatch)
-    connection.execute(
-        f"PRAGMA vane_ossie_load({sql_string(semantic_data['model_path'])}, validate_sources=true)"
-    )
-    assert connection.sql("SELECT name FROM ossie_metrics()").fetchall() == [
-        ("revenue",)
-    ]
-    assert connection.sql(
-        "SELECT name, resolved FROM ossie_datasets() ORDER BY name"
-    ).fetchall() == [
+    connection.execute(f"PRAGMA vane_ossie_load({sql_string(semantic_data['model_path'])}, validate_sources=true)")
+    assert connection.sql("SELECT name FROM ossie_metrics()").fetchall() == [("revenue",)]
+    assert connection.sql("SELECT name, resolved FROM ossie_datasets() ORDER BY name").fetchall() == [
         ("customers", True),
         ("orders", True),
     ]
     assert connection.sql("SELECT count(*) FROM ossie_fields()").fetchone() == (5,)
-    assert connection.sql(
-        "SELECT cardinality FROM ossie_relationships()"
-    ).fetchone() == ("many_to_one",)
-    assert (
-        "sum(orders.amount)"
-        in connection.sql("SELECT ossie_compile(['revenue'], [], [])").fetchone()[0]
-    )
+    assert connection.sql("SELECT cardinality FROM ossie_relationships()").fetchone() == ("many_to_one",)
+    assert "sum(orders.amount)" in connection.sql("SELECT ossie_compile(['revenue'], [], [])").fetchone()[0]
 
 
 @pytest.mark.parametrize(
@@ -115,9 +102,7 @@ def test_model_metadata_stays_on_coordinator(
 def test_mixed_model_metadata_and_data_is_rejected(connection, semantic_data, query):
     import vane
 
-    with pytest.raises(
-        vane.NotImplementedException, match="cannot mix client-context sources"
-    ):
+    with pytest.raises(vane.NotImplementedException, match="cannot mix client-context sources"):
         connection.sql(query).fetchall()
 
 
@@ -125,7 +110,5 @@ def test_model_loading_cannot_be_a_worker_scan(connection, semantic_data):
     import vane
 
     path = str(semantic_data["model_path"]).replace("'", "''")
-    with pytest.raises(
-        vane.NotImplementedException, match="client-context table function ossie_load"
-    ):
+    with pytest.raises(vane.NotImplementedException, match="client-context table function ossie_load"):
         connection.sql(f"SELECT * FROM ossie_load('{path}')").fetchall()
